@@ -56,7 +56,7 @@ function tpc($key, $count, $locale = null)
     return tp($key, ['count' => $count], $locale);
 }
 
-function tpp($key, $position, $locale = null)
+function tpo($key, $position, $locale = null)
 {
     return tp($key, ['position' => $position], $locale);
 }
