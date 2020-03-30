@@ -25,19 +25,24 @@ function tp($key, array $data, $locale = null)
         }
 
         if (isset($form)) {
-            $form = $pluralizer::formName($form);
-            $translations = I18n::translation($locale)[$key] ?? null;
-
-            $formOther = $pluralizer::formName(Oblik\Pluralization\OTHER);
-
-            if (is_array($translations)) {
-                $translation = $translations[$form] ?? $translations[$formOther] ?? null;
-            } elseif (is_string($translations)) {
-                $translation = $translations;
+            $allTranslations = I18n::translation($locale);
+            
+            $resolveTranslation = function ($form) use ($key, $pluralizer, $allTranslations): ?string {
+                $formName = $pluralizer::formName($form);
+                
+                return $allTranslations[$key][$formName] ?? $allTranslations[$key . ".$formName"] ?? null;
+            };
+            
+            $translation = null;
+            if (isset($data['count']) && $data['count'] == 0) {
+                // Special case for count=0, even if language doesn't require it.
+                $translation = $resolveTranslation(Oblik\Pluralization\ZERO);
             }
-
-            if (empty($translation)) {
-                $translation = I18n::translation($locale)[$key . ".$form"] ?? I18n::translation($locale)[$key . ".$formOther"] ?? null;
+            
+            if (!$translation) {
+                $translation =  $resolveTranslation($form)                          // try to use correct form
+                                ?: $resolveTranslation(Oblik\Pluralization\OTHER)   // OTHER form as fallback
+                                ?: ($allTranslations[$key] ?? null);                // use as standard string
             }
 
             if (is_string($translation)) {
