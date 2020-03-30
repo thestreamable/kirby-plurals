@@ -28,12 +28,16 @@ function tp($key, array $data, $locale = null)
             $form = $pluralizer::formName($form);
             $translations = I18n::translation($locale)[$key] ?? null;
 
+            $formOther = $pluralizer::formName(Oblik\Pluralization\OTHER);
+
             if (is_array($translations)) {
-                $translation = $translations[$form] ?? null;
+                $translation = $translations[$form] ?? $translations[$formOther] ?? null;
+            } elseif (is_string($translations)) {
+                $translation = $translations;
             }
 
             if (empty($translation)) {
-                $translation = I18n::translation($locale)[$key . ".$form"] ?? null;
+                $translation = I18n::translation($locale)[$key . ".$form"] ?? I18n::translation($locale)[$key . ".$formOther"] ?? null;
             }
 
             if (is_string($translation)) {
